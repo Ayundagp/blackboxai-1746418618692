@@ -1,19 +1,47 @@
 import React, { useState, useContext } from 'react';
-import { View, TextInput, Button, StyleSheet, Alert, Text } from 'react-native';
+import { View, TextInput, Button, StyleSheet, Alert, Text, ActivityIndicator } from 'react-native';
 import { BBCContext } from '../context/BBCContext';
+
+const API_URL = 'http://your-domain/mobile-message-app/backend';
 
 const LoginScreen = ({ navigation }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const { bbcList } = useContext(BBCContext);
+  const [loading, setLoading] = useState(false);
+  const { updateUser } = useContext(BBCContext);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (username.trim() === '' || password.trim() === '') {
       Alert.alert('Error', 'Please enter username and password');
       return;
     }
-    // For demo, accept any username/password
-    navigation.replace('MainMenu');
+
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/login.php`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: username.trim(),
+          password: password.trim(),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        updateUser(data.user);
+        navigation.replace('MainMenu');
+      } else {
+        Alert.alert('Error', data.message || 'Login failed');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Network error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -33,7 +61,11 @@ const LoginScreen = ({ navigation }) => {
         onChangeText={setPassword}
         secureTextEntry
       />
-      <Button title="Login" onPress={handleLogin} />
+      {loading ? (
+        <ActivityIndicator size="large" color="#0000ff" />
+      ) : (
+        <Button title="Login" onPress={handleLogin} />
+      )}
     </View>
   );
 };
