@@ -1,9 +1,12 @@
 import React, { useState, useContext } from 'react';
-import { View, Text, TextInput, StyleSheet, Button, ScrollView, Alert } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Button, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { BBCContext } from '../context/BBCContext';
 
+const API_URL = 'http://your-domain/mobile-message-app/backend';
+
 const FormScreen = ({ navigation }) => {
-  const { formData, updateFormData } = useContext(BBCContext);
+  const { formData, updateFormData, user } = useContext(BBCContext);
+  const [loading, setLoading] = useState(false);
   const [noPokok, setNoPokok] = useState(formData.noPokok || '');
   const [jumlahBuahBulan1, setJumlahBuahBulan1] = useState(formData.jumlahBuahBulan1 || '');
   const [jumlahBuahBulan2, setJumlahBuahBulan2] = useState(formData.jumlahBuahBulan2 || '');
@@ -11,7 +14,7 @@ const FormScreen = ({ navigation }) => {
   const [jumlahBuahBulan4, setJumlahBuahBulan4] = useState(formData.jumlahBuahBulan4 || '');
   const [jumlahBunga, setJumlahBunga] = useState(formData.jumlahBunga || '');
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (
       !noPokok ||
       !jumlahBuahBulan1 ||
@@ -23,15 +26,39 @@ const FormScreen = ({ navigation }) => {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
-    updateFormData({
+    const formDataToSave = {
+      user_id: user.id,
       noPokok,
       jumlahBuahBulan1,
       jumlahBuahBulan2,
       jumlahBuahBulan3,
       jumlahBuahBulan4,
       jumlahBunga,
-    });
-    navigation.navigate('Summary');
+    };
+
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/save_form.php`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formDataToSave),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        updateFormData(formDataToSave);
+        navigation.navigate('Summary');
+      } else {
+        Alert.alert('Error', data.message || 'Failed to save form data');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Network error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -90,7 +117,11 @@ const FormScreen = ({ navigation }) => {
         keyboardType="numeric"
       />
 
-      <Button title="Next" onPress={handleNext} />
+      {loading ? (
+        <ActivityIndicator size="large" color="#0000ff" />
+      ) : (
+        <Button title="Next" onPress={handleNext} />
+      )}
     </ScrollView>
   );
 };
