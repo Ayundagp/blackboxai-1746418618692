@@ -5,9 +5,11 @@ export const BBCContext = createContext();
 
 const BBC_LIST_KEY = '@bbc_list';
 const FORM_DATA_KEY = '@form_data';
+const USER_KEY = '@user_data';
 
 export const BBCProvider = ({ children }) => {
   const [bbcList, setBbcList] = useState([]);
+  const [user, setUser] = useState(null);
   const [formData, setFormData] = useState({
     region: '',
     area: '',
@@ -27,8 +29,10 @@ export const BBCProvider = ({ children }) => {
       try {
         const storedBbcList = await AsyncStorage.getItem(BBC_LIST_KEY);
         const storedFormData = await AsyncStorage.getItem(FORM_DATA_KEY);
+        const storedUser = await AsyncStorage.getItem(USER_KEY);
         if (storedBbcList) setBbcList(JSON.parse(storedBbcList));
         if (storedFormData) setFormData(JSON.parse(storedFormData));
+        if (storedUser) setUser(JSON.parse(storedUser));
       } catch (e) {
         console.error('Failed to load data from storage', e);
       }
@@ -66,8 +70,25 @@ export const BBCProvider = ({ children }) => {
     setFormData({ ...formData, ...data });
   };
 
+  const updateUser = (userData) => {
+    setUser(userData);
+  };
+
+  const logout = async () => {
+    setUser(null);
+    await AsyncStorage.removeItem(USER_KEY);
+  };
+
   return (
-    <BBCContext.Provider value={{ bbcList, addBBC, formData, updateFormData }}>
+    <BBCContext.Provider value={{ 
+      bbcList, 
+      addBBC, 
+      formData, 
+      updateFormData, 
+      user,
+      updateUser,
+      logout 
+    }}>
       {children}
     </BBCContext.Provider>
   );
