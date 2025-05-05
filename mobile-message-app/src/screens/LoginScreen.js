@@ -1,8 +1,10 @@
 import React, { useState, useContext } from 'react';
-import { View, TextInput, Button, StyleSheet, Alert, Text, ActivityIndicator } from 'react-native';
+import { View, TextInput, Button, StyleSheet, Alert, Text, ActivityIndicator, ImageBackground } from 'react-native';
 import { BBCContext } from '../context/BBCContext';
 
 const API_URL = 'http://your-domain/mobile-message-app/backend';
+// Background image: Oil palm plantation (Perkebunan Kelapa Sawit)
+const backgroundImage = { uri: 'https://images.pexels.com/photos/2132171/pexels-photo-2132171.jpeg' };
 
 const LoginScreen = ({ navigation }) => {
   const [username, setUsername] = useState('');
@@ -45,37 +47,42 @@ const LoginScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
-      <TextInput
-        placeholder="Username"
-        style={styles.input}
-        value={username}
-        onChangeText={setUsername}
-        autoCapitalize="none"
-      />
-      <TextInput
-        placeholder="Password"
-        style={styles.input}
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-      {loading ? (
-        <ActivityIndicator size="large" color="#0000ff" />
-      ) : (
-        <Button title="Login" onPress={handleLogin} />
-      )}
-    </View>
+    <ImageBackground source={backgroundImage} resizeMode="cover" style={styles.container}>
+      <View style={styles.overlay}>
+        <Text style={styles.title}>Login</Text>
+        <TextInput
+          placeholder="Username"
+          style={styles.input}
+          value={username}
+          onChangeText={setUsername}
+          autoCapitalize="none"
+        />
+        <TextInput
+          placeholder="Password"
+          style={styles.input}
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
+        {loading ? (
+          <ActivityIndicator size="large" color="#0000ff" />
+        ) : (
+          <Button title="Login" onPress={handleLogin} />
+        )}
+      </View>
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(255,255,255,0.85)',
     justifyContent: 'center',
     padding: 20,
-    backgroundColor: '#f8fafc',
   },
   input: {
     borderWidth: 1,
@@ -90,6 +97,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 24,
     textAlign: 'center',
+    color: '#1e293b',
   },
 });
 
